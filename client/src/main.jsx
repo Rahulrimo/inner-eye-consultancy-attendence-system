@@ -32,7 +32,8 @@ import {
 
 import "./styles.css";
 
-const API = "http://localhost:5000/api";
+const API =
+  "https://inner-eye-consultancy-attendence-sy-eight.vercel.app/api";
 
 function getToken() {
   return localStorage.getItem("token");
