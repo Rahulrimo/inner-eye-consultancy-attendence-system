@@ -10,7 +10,6 @@ import dashboard from "./routes/dashboard.js";
 
 const app = express();
 
-// CORS
 app.use(
   cors({
     origin: process.env.CLIENT_URL || "http://localhost:5173",
@@ -19,23 +18,21 @@ app.use(
 
 app.use(express.json());
 
-// Health check
+app.get("/", (_, res) => {
+  res.json({
+    message: "Inner Eye Consultancy Attendance API is running",
+  });
+});
+
 app.get("/api/health", (_, res) => {
   res.json({ ok: true });
 });
 
-// Routes
-app.use("/api/auth", auth);
-app.use("/api/attendance", attendance);
-app.use("/api/leaves", leaves);
-app.use("/api/dashboard", dashboard);
-
-// MongoDB connection with caching
 let dbPromise;
 
-const connectDB = async () => {
+const connectDB = () => {
   if (mongoose.connection.readyState === 1) {
-    return mongoose.connection;
+    return Promise.resolve();
   }
 
   if (!dbPromise) {
@@ -45,8 +42,7 @@ const connectDB = async () => {
   return dbPromise;
 };
 
-// Make sure MongoDB is connected before handling API requests
-app.use(async (req, res, next) => {
+app.use(async (_, res, next) => {
   try {
     await connectDB();
     next();
@@ -58,7 +54,11 @@ app.use(async (req, res, next) => {
   }
 });
 
-// Local development
+app.use("/api/auth", auth);
+app.use("/api/attendance", attendance);
+app.use("/api/leaves", leaves);
+app.use("/api/dashboard", dashboard);
+
 if (!process.env.VERCEL) {
   const port = process.env.PORT || 5000;
 
@@ -73,5 +73,4 @@ if (!process.env.VERCEL) {
     });
 }
 
-// Export for Vercel
 export default app;
